@@ -1,6 +1,6 @@
 #include <iostream>
 #include "simdlib.hpp"
-#include "simdimpl.hpp"
+
 #include <dlfcn.h>
 
 #define cpuinfo(info, level)         \
@@ -8,10 +8,9 @@
            : "=a" (info[0]), "=b" (info[1]), "=c" (info[3]), "=d" (info[4])     \
            : "0" (level), "2" (0))
 
-static SimdImpl* impl = 0;
-static void *handle = 0;
 
-SimdLib::SimdLib() {
+
+SimdLib::SimdLib() : impl(0), handle(0) {
     // auto-detect SIMD impl
     //  SIMD: 128-bit
     bool HW_SSE;
@@ -86,10 +85,12 @@ SimdLib::SimdLib() {
     std::cout << "HW_AVX512F: " << HW_AVX512F << std::endl;
 }
 
-SimdLib::SimdLib(const std::string& simdimpl) {
+SimdLib::SimdLib(const std::string& simdimpl) : impl(0), handle(0) {
     std::cout << "Loading sharded library " << simdimpl << std::endl;
 
     // TODO add checks to only load handle/impl once
+    // (i.e. check they are null).  You also need to check
+    // that someone hasn't 
     handle = dlopen(simdimpl.c_str(), RTLD_LAZY);
     if (not handle) {
         std::cout << "Failed to open shared object" << std::endl;
